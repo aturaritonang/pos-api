@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-    port: 8100,
+    port: process.env.PORT || 8100,
     dbconn: 'mongodb://admin:admin12345@ds233323.mlab.com:33323/posdb',
     dbname: 'posdb',
     enableAuth: true,
