@@ -3,10 +3,6 @@ const jwt = require('jsonwebtoken');
 
 module.exports = function (req, res, next) {
     try {
-        // getConfig(function(callback) {
-        //     config.enableAuth = callback;
-        //     // console.log(callback);
-        // });
         if (config.enableAuth) {
             var token = req.headers['x-access-token'] || req.body.token || req.query.token;
             if (token) {
@@ -19,6 +15,7 @@ module.exports = function (req, res, next) {
                     }
                     console.log(decode);
                     req.decode = decode;
+                    req.userName = decode.userName;
                     next();
                 });
             } else {
@@ -33,7 +30,7 @@ module.exports = function (req, res, next) {
     } catch (error) {
         res.send(403, {
             error: true,
-            message: 'Error verification',
+            message: 'Error verification : ' + error.message,
             auth: config.enableAuth
         });
     }

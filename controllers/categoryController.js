@@ -19,7 +19,7 @@ module.exports = exports = function (server) {
                 if (error) {
                     return next(new Error(error));
                 }
-                
+
                 res.send(200, response);
 
                 db.close();
@@ -49,7 +49,7 @@ module.exports = exports = function (server) {
     });
 
     //Route Get All Active true
-    server.get('/:sufix/api/cattrue', (req, res, next) => {
+    server.get('/:sufix/api/cattrue', verifyToken, (req, res, next) => {
         var sufix = req.params.sufix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
@@ -72,7 +72,7 @@ module.exports = exports = function (server) {
     });
 
     //Route Get by Id
-    server.get('/:sufix/api/category/:id', (req, res, next) => {
+    server.get('/:sufix/api/category/:id', verifyToken, (req, res, next) => {
         var sufix = req.params.sufix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
@@ -92,7 +92,7 @@ module.exports = exports = function (server) {
     });
 
     //Route Get All Active True
-    server.get('/:sufix/api/categorytrue', (req, res, next) => {
+    server.get('/:sufix/api/categorytrue', verifyToken, (req, res, next) => {
         var sufix = req.params.sufix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
@@ -115,17 +115,29 @@ module.exports = exports = function (server) {
     });
 
     //Route Post
-    server.post('/:sufix/api/category', (req, res, next) => {
+    server.post('/:sufix/api/category', verifyToken, (req, res, next) => {
         var sufix = req.params.sufix;
+
+        let entity = req.body;
+
+        if (entity.initial == undefined || entity.name == undefined || entity.active == undefined) {
+            var error = new Error('initial, name and active are required!');
+            error.status = 500;
+            return next(error);
+        }
+
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
                 return next(new Error(err));
             }
 
             dbo = db.db(config.dbname);
-            let category = req.body;
+            let category = {};
 
-            // CategoryVal(category);
+            category.initial = entity.initial;
+            category.name = entity.name;
+            category.active = entity.active;
+
             TimeStamp(category, req);
 
             await dbo.collection('category' + sufix).insert(category, function (error, response) {
@@ -140,18 +152,39 @@ module.exports = exports = function (server) {
     });
 
     //Route PUT
-    server.put('/:sufix/api/category/:catId', (req, res, next) => {
+    server.put('/:sufix/api/category/:id', verifyToken, (req, res, next) => {
         var sufix = req.params.sufix;
+
+        let entity = req.body;
+
+        if (entity.initial == undefined && entity.name == undefined && entity.active == undefined) {
+            var error = new Error('initial or name or active are required!');
+            error.status = 500;
+            return next(error);
+        }
+
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
                 return next(new Error(err));
             }
 
             dbo = db.db(config.dbname);
-            let id = req.params.catId;
+            let id = req.params.id;
 
-            let category = req.body;
-            // CategoryVal(category);
+            let category = {};
+
+            if (entity.initial != undefined) {
+                category.initial = entity.initial;
+            }
+
+            if (entity.name != undefined) {
+                category.name = entity.name;
+            }
+
+            if (entity.active != undefined) {
+                category.active = entity.active;
+            }
+
             TimeStamp(category, req);
 
             await dbo.collection('category' + sufix).findOneAndUpdate({ '_id': ObjectID(id) }, { $set: category }, function (error, response) {
@@ -169,7 +202,7 @@ module.exports = exports = function (server) {
     });
 
     //Route DEL
-    server.del('/:sufix/api/category/:id', (req, res, next) => {
+    server.del('/:sufix/api/category/:id', verifyToken, (req, res, next) => {
         var sufix = req.params.sufix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
@@ -179,7 +212,7 @@ module.exports = exports = function (server) {
             dbo = db.db(config.dbname);
             let id = req.params.id;
 
-            await dbo.collection('category' + sufix).deleteOne({ '_id': ObjectID(id) }, function (error, response) {
+            await dbo.collection('category' + sufix).findOneAndDelete({ '_id': ObjectID(id) }, function (error, response) {
                 if (error) {
                     return next(new Error(error));
                 }

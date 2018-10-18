@@ -31,8 +31,8 @@ module.exports = exports = function (server) {
                             delete response.password;
                             let token = jwt.sign({
                                 userName: user.userName,
-                                password: user.password
-                            }, config.jwt_secret, { expiresIn: 86400 });
+                                sufix: sufix
+                            }, config.jwt_secret, { expiresIn: config.expiresIn });
 
                             response.token = token;
                             res.send(200, response);

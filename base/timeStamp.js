@@ -4,14 +4,14 @@ module.exports = function (entity, req) {
     if (req.method === 'POST') {
         if(!entity.createBy)
         {
-            entity.createBy = null;
+            entity.createBy = req.userName;
         }
         entity.createDate = new Date();
     }
 
     if(!entity.modifyBy)
     {
-        entity.modifyBy = null;
+        entity.modifyBy = req.userName;
     }
     entity.modifyDate = new Date();
 }

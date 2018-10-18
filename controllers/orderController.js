@@ -7,7 +7,7 @@ let dbo;
 
 module.exports = exports = function (server) {
     //Route POS
-    server.post('/:sufix/api/orderDet', (req, res, next) => {
+    server.post('/:sufix/api/orderDet', verifyToken, (req, res, next) => {
         var sufix = req.params.sufix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
@@ -26,7 +26,7 @@ module.exports = exports = function (server) {
     });
 
     //Route get Report
-    server.get('/:sufix/api/orderreport', (req, res, next) => {
+    server.get('/:sufix/api/orderreport', verifyToken, (req, res, next) => {
         var sufix = req.params.sufix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
@@ -48,6 +48,59 @@ module.exports = exports = function (server) {
                             "reference": { "$first": "$reference" },
                             "payment": { "$first": "$payment" },
                             "details": { "$push": "$details" }
+                        }
+                    },
+                    {
+                        $project: {
+                            "details.createDate": 0,
+                            "details.modifyDate": 0,
+                            "details.active": 0,
+                            "details.headerId": 0,
+                            "details.productId": 0,
+                            "details.product.active": 0,
+                        }
+                    },
+                    {
+                        $sort: {
+                            "reference": -1
+                        }
+                    }
+                ]).toArray(function (err, response) {
+                    if (err) {
+                        return next(new Error(err));
+                    }
+
+                    res.send(200, response);
+                });
+        });
+    });
+
+    //Route get Report Paging
+    server.get('/:sufix/api/orderreport/:pg/:cnt', verifyToken, (req, res, next) => {
+        var page = req.params.pg;
+        var count = req.params.cnt;
+        var sufix = req.params.sufix;
+        MongoClient.connect(config.dbconn, async function (err, db) {
+            if (err) {
+                return next(new Error(err));
+            }
+            dbo = db.db(config.dbname);
+
+            dbo.collection('orderHeader' + sufix)
+                .aggregate([
+                    { $lookup: { from: 'orderDetail' + sufix, localField: '_id', foreignField: 'headerId', as: 'details' } },
+                    { $unwind: { path: '$details', 'preserveNullAndEmptyArrays': true } },
+                    { $lookup: { from: 'product' + sufix, localField: 'details.productId', foreignField: '_id', as: 'details.product' } },
+                    { $unwind: { path: '$details.product', 'preserveNullAndEmptyArrays': true } },
+                    {
+                        $group: {
+                            "_id": "$_id",
+                            "payment": "$payment",
+                            "createDate": { "$first": "$createDate" },
+                            "reference": { "$first": "$reference" },
+                            "payment": { "$first": "$payment" },
+                            "details": { "$push": "$details" },
+                            "count" : { $sum: 1 }
                         }
                     },
                     {

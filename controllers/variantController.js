@@ -6,32 +6,35 @@ const TimeStamp = require('../base/timeStamp');
 let dbo;
 
 module.exports = exports = function (server) {
+    //Method post
+    server.post('/:sufix/api/variant', verifyToken, (req, res, next) => {
 
-    server.post('/:sufix/api/product', verifyToken, (req, res, next) => {
         var sufix = req.params.sufix;
-        let product = req.body;
+        let entity = req.body;
 
-        if (product.variantId == undefined || product.initial == undefined || product.name == undefined || product.desc == undefined || !product.price || product.active == undefined) {
-            return res.send(500, {
-                error: true,
-                message: 'variantId, initial, name, desc, price, active are required'
-            });
+        if (entity.categoryId == undefined || entity.initial == undefined || entity.name == undefined || entity.active == undefined) {
+            var error = new Error('categoryId, initial, name and active are required!');
+            error.status = 500;
+            return next(error);
         }
+
+        let variant = {};
+
+        variant.categoryId = ObjectID(entity.categoryId);
+        variant.initial = entity.initial;
+        variant.name = entity.name;
+        variant.active = entity.active;
 
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
                 return next(new Error(err));
             }
 
-            if (product.variantId) {
-                product.variantId = ObjectID(product.variantId);
-            }
-
             dbo = db.db(config.dbname);
 
-            TimeStamp(product, req);
+            TimeStamp(variant, req);
 
-            await dbo.collection('product' + sufix).insert(product, function (error, response) {
+            await dbo.collection('variant' + sufix).insert(variant, function (error, response) {
                 if (error) {
                     return next(new Error(error));
                 }
@@ -46,7 +49,7 @@ module.exports = exports = function (server) {
     });
 
     //Route get all
-    server.get('/:sufix/api/product', verifyToken, (req, res, next) => {
+    server.get('/:sufix/api/variant', verifyToken, (req, res, next) => {
         var sufix = req.params.sufix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
@@ -55,20 +58,20 @@ module.exports = exports = function (server) {
 
             dbo = db.db(config.dbname);
 
-            await dbo.collection('product' + sufix)
+            await dbo.collection('variant' + sufix)
                 .aggregate([
                     {
                         $lookup: {
-                            from: "variant" + sufix,
-                            localField: "variantId",
+                            from: "category" + sufix,
+                            localField: "categoryId",
                             foreignField: "_id",
-                            as: "variant"
+                            as: "category"
                         }
                     }, {
-                        $unwind: "$variant"
+                        $unwind: "$category"
                     }, {
                         $project: {
-                            'variant._id': 0
+                            'category._id': 0
                         }
                     }
                 ]).toArray(function (error, response) {
@@ -83,7 +86,7 @@ module.exports = exports = function (server) {
     });
 
     //Route get all
-    server.get('/:sufix/api/prodtrue', verifyToken, (req, res, next) => {
+    server.get('/:sufix/api/varianttrue', verifyToken, (req, res, next) => {
         var sufix = req.params.sufix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
@@ -92,7 +95,7 @@ module.exports = exports = function (server) {
 
             dbo = db.db(config.dbname);
 
-            await dbo.collection('product' + sufix)
+            await dbo.collection('variant' + sufix)
                 .find({ 'active': true }, { '_id': 1, 'initial': 1, 'name': 1, 'price': 1 })
                 .toArray(function (error, response) {
                     if (error) {
@@ -106,7 +109,7 @@ module.exports = exports = function (server) {
     });
 
     //Route get by id
-    server.get('/:sufix/api/product/:id', verifyToken, (req, res, next) => {
+    server.get('/:sufix/api/variant/:id', verifyToken, (req, res, next) => {
         var sufix = req.params.sufix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
@@ -117,22 +120,22 @@ module.exports = exports = function (server) {
 
             let id = ObjectID(req.params.id);
 
-            await dbo.collection('product' + sufix)
+            await dbo.collection('variant' + sufix)
                 .aggregate([
                     {
                         $lookup: {
-                            from: "variant" + sufix,
-                            localField: "variantId",
+                            from: "category" + sufix,
+                            localField: "categoryId",
                             foreignField: "_id",
-                            as: "variant"
+                            as: "category"
                         }
                     }, {
-                        $unwind: "$variant"
+                        $unwind: "$category"
                     }, {
                         $match: { '_id': id }
                     }, {
                         $project: {
-                            'variant._id': 0
+                            'category._id': 0
                         }
                     }
                 ]).toArray(function (error, response) {
@@ -151,27 +154,27 @@ module.exports = exports = function (server) {
     });
 
     //Route
-    server.put('/:sufix/api/product/:id', verifyToken, (req, res, next) => {
+    server.put('/:sufix/api/variant/:id', verifyToken, (req, res, next) => {
         var sufix = req.params.sufix;
         let id = ObjectID(req.params.id);
-        let product = req.body;
+        let variant = req.body;
 
-        if (product.variantId != undefined || product.initial != undefined || product.name != undefined || product.desc != undefined|| product.price != undefined || product.active != undefined) {
+        if (variant.categoryId || variant.initial || variant.name || variant.active) {
             MongoClient.connect(config.dbconn, async function (err, db) {
                 if (err) {
                     return next(new Error(err));
                 }
 
-                if (product.variantId) {
-                    product.variantId = ObjectID(product.variantId);
+                if (variant.categoryId) {
+                    variant.categoryId = ObjectID(variant.categoryId);
                 }
 
-                TimeStamp(product, req);
+                TimeStamp(variant, req);
 
                 dbo = db.db(config.dbname);
 
-                await dbo.collection('product' + sufix)
-                    .findOneAndUpdate({ '_id': id }, { $set: product }, function (error, response) {
+                await dbo.collection('variant' + sufix)
+                    .findOneAndUpdate({ '_id': id }, { $set: variant }, function (error, response) {
                         if (error) {
                             return next(new Error(error));
                         }
@@ -186,13 +189,13 @@ module.exports = exports = function (server) {
         } else {
             return res.send(500, {
                 error: true,
-                message: 'No found class: variantId or initial or name or desc or price or active'
+                message: 'No found class: categoryId or initial or name or desc or price or active'
             });
         }
     });
 
     //Route DEL
-    server.del('/:sufix/api/product/:id', verifyToken, (req, res, next) => {
+    server.del('/:sufix/api/variant/:id', verifyToken, (req, res, next) => {
         var sufix = req.params.sufix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
@@ -202,7 +205,7 @@ module.exports = exports = function (server) {
             dbo = db.db(config.dbname);
             let id = req.params.id;
 
-            await dbo.collection('product' + sufix).deleteOne({ '_id': ObjectID(id) }, function (error, response) {
+            await dbo.collection('variant' + sufix).deleteOne({ '_id': ObjectID(id) }, function (error, response) {
                 if (error) {
                     return next(new Error(error));
                 }

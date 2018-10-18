@@ -45,6 +45,9 @@ require('./controllers/userController')(server);
 //Category route
 require('./controllers/categoryController')(server);
 
+//Variant route
+require('./controllers/variantController')(server);
+
 //Product route
 require('./controllers/productController')(server);
 

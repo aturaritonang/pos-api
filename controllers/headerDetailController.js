@@ -7,7 +7,7 @@ let dbo;
 
 module.exports = exports = function (server) {
     //Route POS
-    server.post('/:sufix/api/headdet', (req, res, next) => {
+    server.post('/:sufix/api/headdet', verifyToken, (req, res, next) => {
         var sufix = req.params.sufix;
         try {
             MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, db) {
