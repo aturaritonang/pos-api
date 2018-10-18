@@ -2,10 +2,10 @@
 
 module.exports = {
     port: process.env.PORT || 8500,
-    dbconn: process.env.PORT ? 'mongodb://admin:admin12345@ds233323.mlab.com:33323/posdb' : 'mongodb://localhost:27017/workshopdb',
-    dbname: process.env.PORT ? 'posdb' : 'workshopdb',
+    dbconn: process.env.MLAB || 'mongodb://localhost:27017/workshopdb',
+    dbname: process.env.DBNAME || 'workshopdb',
     enableAuth: true,
     expiresIn: 86400,
-    jwt_secret: 'secret1234',
+    jwt_secret: process.env.JWT_SECRET || 'secret1234',
     userCount: 2
 }
