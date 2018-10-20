@@ -54,8 +54,8 @@ require('./controllers/productController')(server);
 //Order Route
 require('./controllers/orderController')(server);
 
-//HeaderDetail Route
-require('./controllers/headerDetailController')(server);
+// //HeaderDetail Route
+// require('./controllers/headerDetailController')(server);
 
 server.use((error, req, res, next) => {
     console.log({
