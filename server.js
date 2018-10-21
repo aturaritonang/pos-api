@@ -2,7 +2,7 @@ const restify = require('restify');
 const corsMidWare = require('restify-cors-middleware');
 
 const server = restify.createServer({
-    name: 'Web API MenKeu',
+    name: 'Web POS API',
     version: '1.0.0'
 });
 
@@ -20,7 +20,7 @@ server.use(restify.plugins.queryParser());
 
 const cors = corsMidWare({
     origins: ['*'],
-    allowHeaders: ['X-App-Version'],
+    allowHeaders: ['X-App-Version', 'x-access-token'],
     exposeHeaders: []
 });
 

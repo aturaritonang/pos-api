@@ -11,13 +11,17 @@ module.exports = exports = function (server) {
         var sufix = req.params.sufix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
-                return next(new Error(err));
+                var error = new Error(err.message);
+                error.status = 500;
+                return next(error);
             }
 
             dbo = db.db(config.dbname);
             await dbo.collection('category' + sufix).find({}).toArray(function (error, response) {
                 if (error) {
-                    return next(new Error(error));
+                    var err = new Error(error.message);
+                    err.status = 500;
+                    return next(err);
                 }
 
                 res.send(200, response);
@@ -32,13 +36,17 @@ module.exports = exports = function (server) {
         var sufix = req.params.sufix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
-                return next(new Error(err));
+                var error = new Error(err.message);
+                error.status = 500;
+                return next(error);
             }
 
             dbo = db.db(config.dbname);
             await dbo.collection('category' + sufix).find({}).toArray(function (error, response) {
                 if (error) {
-                    return next(new Error(error));
+                    var err = new Error(error.message);
+                    err.status = 500;
+                    return next(err);
                 }
 
                 res.send(200, response);
@@ -53,7 +61,9 @@ module.exports = exports = function (server) {
         var sufix = req.params.sufix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
-                return next(new Error(err));
+                var error = new Error(err.message);
+                error.status = 500;
+                return next(error);
             }
 
             dbo = db.db(config.dbname);
@@ -61,7 +71,9 @@ module.exports = exports = function (server) {
                 .find({ 'active': true }, { '_id': 1, 'initial': 1, 'name': 1 })
                 .toArray(function (error, response) {
                     if (error) {
-                        return next(new Error(error));
+                        var err = new Error(error.message);
+                        err.status = 500;
+                        return next(err);
                     }
 
                     res.send(200, response);
@@ -76,13 +88,17 @@ module.exports = exports = function (server) {
         var sufix = req.params.sufix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
-                return next(new Error(err));
+                var error = new Error(err.message);
+                error.status = 500;
+                return next(error);
             }
             let id = req.params.id;
             dbo = db.db(config.dbname);
             await dbo.collection('category' + sufix).findOne({ '_id': ObjectID(id) }, function (error, response) {
                 if (error) {
-                    return next(new Error(error));
+                    var err = new Error(error.message);
+                    err.status = 500;
+                    return next(err);
                 }
 
                 res.send(200, response);
@@ -96,7 +112,9 @@ module.exports = exports = function (server) {
         var sufix = req.params.sufix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
-                return next(new Error(err));
+                var error = new Error(err.message);
+                error.status = 500;
+                return next(error);
             }
 
             dbo = db.db(config.dbname);
@@ -104,7 +122,9 @@ module.exports = exports = function (server) {
                 .find({ 'active': true }, { '_id': 1, 'initial': 1, 'name': 1 })
                 .toArray(function (error, response) {
                     if (error) {
-                        return next(new Error(error));
+                        var err = new Error(error.message);
+                        err.status = 500;
+                        return next(err);
                     }
 
                     res.send(200, response);
@@ -122,13 +142,15 @@ module.exports = exports = function (server) {
 
         if (entity.initial == undefined || entity.name == undefined || entity.active == undefined) {
             var error = new Error('initial, name and active are required!');
-            error.status = 500;
+            error.status = 406;
             return next(error);
         }
 
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
-                return next(new Error(err));
+                var error = new Error(err.message);
+                error.status = 500;
+                return next(error);
             }
 
             dbo = db.db(config.dbname);
@@ -142,7 +164,9 @@ module.exports = exports = function (server) {
 
             await dbo.collection('category' + sufix).insert(category, function (error, response) {
                 if (error) {
-                    return next(new Error(error));
+                    var err = new Error(error.message);
+                    err.status = 500;
+                    return next(err);
                 }
 
                 res.send(201, response);
@@ -159,13 +183,15 @@ module.exports = exports = function (server) {
 
         if (entity.initial == undefined && entity.name == undefined && entity.active == undefined) {
             var error = new Error('initial or name or active are required!');
-            error.status = 500;
+            error.status = 406;
             return next(error);
         }
 
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
-                return next(new Error(err));
+                var error = new Error(err.message);
+                error.status = 500;
+                return next(error);
             }
 
             dbo = db.db(config.dbname);
@@ -189,7 +215,9 @@ module.exports = exports = function (server) {
 
             await dbo.collection('category' + sufix).findOneAndUpdate({ '_id': ObjectID(id) }, { $set: category }, function (error, response) {
                 if (error) {
-                    return next(new Error(error));
+                    var err = new Error(error.message);
+                    err.status = 500;
+                    return next(err);
                 }
 
                 res.send(200, {
@@ -206,7 +234,9 @@ module.exports = exports = function (server) {
         var sufix = req.params.sufix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
-                return next(new Error(err));
+                var error = new Error(err.message);
+                error.status = 500;
+                return next(error);
             }
 
             dbo = db.db(config.dbname);
@@ -214,7 +244,9 @@ module.exports = exports = function (server) {
 
             await dbo.collection('category' + sufix).findOneAndDelete({ '_id': ObjectID(id) }, function (error, response) {
                 if (error) {
-                    return next(new Error(error));
+                    var err = new Error(error.message);
+                    err.status = 500;
+                    return next(err);
                 }
 
                 res.send(200, response);

@@ -11,10 +11,10 @@ module.exports = exports = function (server) {
         var sufix = req.params.sufix;
         let product = req.body;
 
-        if (product.variantId == undefined || product.initial == undefined || product.name == undefined || product.desc == undefined || !product.price || product.active == undefined) {
+        if (product.variantId == undefined || product.initial == undefined || product.name == undefined || product.description == undefined || !product.price || product.active == undefined) {
             return res.send(500, {
                 error: true,
-                message: 'variantId, initial, name, desc, price, active are required'
+                message: 'variantId, initial, name, description, price, active are required'
             });
         }
 
@@ -66,6 +66,15 @@ module.exports = exports = function (server) {
                         }
                     }, {
                         $unwind: "$variant"
+                    },{
+                        $lookup: {
+                            from: "category" + sufix,
+                            localField: "variant.categoryId",
+                            foreignField: "_id",
+                            as: "variant.category"
+                        }
+                    }, {
+                        $unwind: "$variant.category"
                     }, {
                         $project: {
                             'variant._id': 0
@@ -156,7 +165,7 @@ module.exports = exports = function (server) {
         let id = ObjectID(req.params.id);
         let product = req.body;
 
-        if (product.variantId != undefined || product.initial != undefined || product.name != undefined || product.desc != undefined|| product.price != undefined || product.active != undefined) {
+        if (product.variantId != undefined || product.initial != undefined || product.name != undefined || product.description != undefined|| product.price != undefined || product.active != undefined) {
             MongoClient.connect(config.dbconn, async function (err, db) {
                 if (err) {
                     return next(new Error(err));
@@ -186,7 +195,7 @@ module.exports = exports = function (server) {
         } else {
             return res.send(500, {
                 error: true,
-                message: 'No found class: variantId or initial or name or desc or price or active'
+                message: 'No found class: variantId or initial or name or description or price or active'
             });
         }
     });
