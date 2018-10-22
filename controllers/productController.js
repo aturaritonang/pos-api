@@ -197,7 +197,8 @@ module.exports = exports = function (server) {
                         if (cb == null) {
                             var error = new Error('Variant not found!');
                             error.status = 412;
-                            return next(error);
+                            // return next(error);
+                            res.send(412, error);
                         }
                     });
                     product.variantId = ObjectId(entity.variantId);
