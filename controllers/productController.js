@@ -197,8 +197,7 @@ module.exports = exports = function (server) {
                         if (cb == null) {
                             var error = new Error('Variant not found!');
                             error.status = 412;
-                            // return next(error);
-                            res.send(412, error);
+                            return next(error);
                         }
                     });
                     product.variantId = ObjectId(entity.variantId);
@@ -272,9 +271,9 @@ module.exports = exports = function (server) {
     });
 };
 
-function MatchVariant(dbo, suffix, id, callback) {
+async function MatchVariant(dbo, suffix, id, callback) {
     try {
-        dbo.collection('variant' + suffix)
+        await dbo.collection('variant' + suffix)
             .findOne({ "_id": ObjectId(id) }, function (error, doc) {
                 if (error) {
                     return callback(null);
