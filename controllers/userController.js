@@ -7,8 +7,8 @@ let dbo;
 
 module.exports = exports = function (server) {
     //Login authentication
-    server.post('/:sufix/api/auth', (req, res, next) => {
-        var sufix = req.params.sufix;
+    server.post('/:suffix/api/auth', (req, res, next) => {
+        var suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             let user = req.body;
             if (!user.userName || !user.password) {
@@ -20,7 +20,7 @@ module.exports = exports = function (server) {
 
             dbo = db.db(config.dbname);
 
-            await dbo.collection('user' + sufix)
+            await dbo.collection('user' + suffix)
                 .findOne({ 'userName': user.userName }, function (error, response) {
                     if (error) {
                         return next(new Error(error));
@@ -31,7 +31,7 @@ module.exports = exports = function (server) {
                             delete response.password;
                             let token = jwt.sign({
                                 userName: user.userName,
-                                sufix: sufix
+                                suffix: suffix
                             }, config.jwt_secret, { expiresIn: config.expiresIn });
 
                             response.token = token;
@@ -48,7 +48,7 @@ module.exports = exports = function (server) {
                         if (user.userName === 'admin') {
                             TimeStamp(user, req);
                             if (user.password.length >= 6) {
-                                dbo.collection('user' + sufix).insertOne(user, function (error, resAdmin) {
+                                dbo.collection('user' + suffix).insertOne(user, function (error, resAdmin) {
                                     if (error) {
                                         return next(new Error(error));
                                     }

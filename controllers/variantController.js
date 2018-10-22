@@ -7,8 +7,8 @@ let dbo;
 
 module.exports = exports = function (server) {
     //Post/Insert/Add
-    server.post('/:sufix/api/variant', verifyToken, (req, res, next) => {
-        var sufix = req.params.sufix;
+    server.post('/:suffix/api/variant', verifyToken, (req, res, next) => {
+        var suffix = req.params.suffix;
         try {
             MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, dbase) {
                 if (err) {
@@ -25,7 +25,7 @@ module.exports = exports = function (server) {
                     return next(error);
                 }
 
-                MatchCategory(dbo, sufix, entity.categoryId, (cb) => {
+                MatchCategory(dbo, suffix, entity.categoryId, (cb) => {
                     console.log(cb);
                     if (cb == null) {
                         var error = new Error('Category not found!');
@@ -42,7 +42,7 @@ module.exports = exports = function (server) {
 
                 TimeStamp(variant, req);
 
-                await dbo.collection('variant' + sufix)
+                await dbo.collection('variant' + suffix)
                     .insertOne(variant, function (error, response) {
                         if (error) {
                             return next(new Error(error));
@@ -63,25 +63,25 @@ module.exports = exports = function (server) {
     });
 
 
-    server.get('/:sufix/api/variant', verifyToken, (req, res, next) => {
-        var sufix = req.params.sufix;
+    server.get('/:suffix/api/variant', verifyToken, (req, res, next) => {
+        var suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, dbase) {
             if (err) {
                 return next(new Error(err));
             }
 
             dbo = dbase.db(config.dbname);
-            await dbo.collection('variant' + sufix)
+            await dbo.collection('variant' + suffix)
                 .aggregate([
                     {
                         $lookup: {
-                            from: 'category' + sufix,
+                            from: 'category' + suffix,
                             localField: 'categoryId',
                             foreignField: '_id',
                             as: 'category'
                         }
                     }, {
-                        $unwind: '$category'
+                        $unwind: { path : '$category', 'preserveNullAndEmptyArrays': true }
                     }, {
                         $project: {
                             'category._id': 0
@@ -98,8 +98,8 @@ module.exports = exports = function (server) {
         });
     });
 
-    server.get('/:sufix/api/variant/:id', verifyToken, (req, res, next) => {
-        var sufix = req.params.sufix;
+    server.get('/:suffix/api/variant/:id', verifyToken, (req, res, next) => {
+        var suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, dbase) {
             if (err) {
                 return next(new Error(err));
@@ -107,7 +107,7 @@ module.exports = exports = function (server) {
 
             let id = req.params.id;
             dbo = dbase.db(config.dbname);
-            await dbo.collection('variant' + sufix)
+            await dbo.collection('variant' + suffix)
                 .findOne({ "_id": ObjectId(id) }, function (error, doc) {
                     if (error) {
                         return next(new Error(error));
@@ -119,7 +119,7 @@ module.exports = exports = function (server) {
         });
     });
 
-    server.put('/:sufix/api/variant/:id', verifyToken, (req, res, next) => {
+    server.put('/:suffix/api/variant/:id', verifyToken, (req, res, next) => {
         MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, dbase) {
             if (err) {
                 return next(new Error(err));
@@ -155,7 +155,7 @@ module.exports = exports = function (server) {
             TimeStamp(variant, req);
 
             dbo = dbase.db(config.dbname);
-            await dbo.collection('variant' + sufix)
+            await dbo.collection('variant' + suffix)
                 .findOneAndUpdate({ "_id": ObjectId(id) }, { $set: variant }, function (error, doc) {
                     if (error) {
                         return next(new Error(error));
@@ -167,7 +167,7 @@ module.exports = exports = function (server) {
         });
     });
 
-    server.del('/:sufix/api/variant/:id', verifyToken, (req, res, next) => {
+    server.del('/:suffix/api/variant/:id', verifyToken, (req, res, next) => {
         MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, dbase) {
             if (err) {
                 return next(new Error(err));
@@ -176,7 +176,7 @@ module.exports = exports = function (server) {
             let id = req.params.id;
 
             dbo = dbase.db(config.dbname);
-            await dbo.collection('variant' + sufix)
+            await dbo.collection('variant' + suffix)
                 .findOneAndDelete({ "_id": ObjectId(id) }, function (error, doc) {
                     if (error) {
                         return next(new Error(error));
@@ -189,9 +189,9 @@ module.exports = exports = function (server) {
     });
 }
 
-function MatchCategory(dbo, sufix, id, callback) {
+function MatchCategory(dbo, suffix, id, callback) {
     try {
-        dbo.collection('category' + sufix)
+        dbo.collection('category' + suffix)
             .findOne({ "_id": ObjectId(id) }, function (error, doc) {
                 if (error) {
                     return callback(null);

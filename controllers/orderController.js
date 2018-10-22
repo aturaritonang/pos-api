@@ -7,8 +7,8 @@ let dbo;
 
 module.exports = exports = function (server) {
     //Route post
-    server.post('/:sufix/api/order', verifyToken, (req, res, next) => {
-        var sufix = req.params.sufix;
+    server.post('/:suffix/api/order', verifyToken, (req, res, next) => {
+        var suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, dbase) {
             if (err) {
                 return next(err);
@@ -25,14 +25,14 @@ module.exports = exports = function (server) {
             }
 
 
-            GetNewReference(dbo, sufix, newRef => {
+            GetNewReference(dbo, suffix, newRef => {
                 var header = {};
                 header.payment = entity.payment;
                 header.reference = newRef;
 
                 TimeStamp(header, req);
 
-                dbo.collection('orderHeader' + sufix).insertOne(header, (errHeader, resHeader) => {
+                dbo.collection('orderHeader' + suffix).insertOne(header, (errHeader, resHeader) => {
                     if (errHeader) {
                         return next(new Error(errHeader));
                     }
@@ -50,7 +50,7 @@ module.exports = exports = function (server) {
                             TimeStamp(order, req);
                         });
 
-                        dbo.collection('orderDetail' + sufix).insertMany(details, (errDetail, resDetail) => {
+                        dbo.collection('orderDetail' + suffix).insertMany(details, (errDetail, resDetail) => {
                             if (errDetail) {
                                 return next(new Error(errDetail));
                             }
@@ -67,8 +67,8 @@ module.exports = exports = function (server) {
         });
     });
 
-    server.get('/:sufix/api/orderrpt', verifyToken, (get, res, next) => {
-        var sufix = req.params.sufix;
+    server.get('/:suffix/api/orderrpt', verifyToken, (get, res, next) => {
+        var suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, dbase) {
             if (err) {
                 return next(err);
@@ -76,11 +76,11 @@ module.exports = exports = function (server) {
 
             dbo = dbase.db(config.dbname);
 
-            await dbo.collection('orderHeader' + sufix)
+            await dbo.collection('orderHeader' + suffix)
                 .aggregate([
-                    { $lookup: { from: 'orderDetail' + sufix, localField: '_id', foreignField: 'headerId', as: 'details' } },
+                    { $lookup: { from: 'orderDetail' + suffix, localField: '_id', foreignField: 'headerId', as: 'details' } },
                     { $unwind: { path: '$details', 'preserveNullAndEmptyArrays': true } },
-                    { $lookup: { from: 'product' + sufix, localField: 'details.productId', foreignField: '_id', as: 'details.product' } },
+                    { $lookup: { from: 'product' + suffix, localField: 'details.productId', foreignField: '_id', as: 'details.product' } },
                     { $unwind: { path: '$details.product', 'preserveNullAndEmptyArrays': true } },
                     {
                         $group: {
@@ -122,11 +122,11 @@ module.exports = exports = function (server) {
     });
 }
 
-function GetNewReference(dbo, sufix, callback) {
+function GetNewReference(dbo, suffix, callback) {
     var newRef = 'SLS-' + new Date().getFullYear().toString().substr(-2) + ("0" + (new Date().getMonth() + 1)).substr(-2) + "-";
     var lastRef = '0001';
 
-    dbo.collection('orderHeader' + sufix).aggregate([
+    dbo.collection('orderHeader' + suffix).aggregate([
         {
             $match: { 'reference': { $regex: '.*' + newRef + '.*' } }
         },

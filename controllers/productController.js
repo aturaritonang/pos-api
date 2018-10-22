@@ -7,8 +7,8 @@ let dbo;
 
 module.exports = exports = function (server) {
 
-    server.post('/:sufix/api/product', verifyToken, (req, res, next) => {
-        var sufix = req.params.sufix;
+    server.post('/:suffix/api/product', verifyToken, (req, res, next) => {
+        var suffix = req.params.suffix;
         let product = req.body;
 
         if (product.variantId == undefined || product.initial == undefined || product.name == undefined || product.description == undefined || !product.price || product.active == undefined) {
@@ -31,7 +31,7 @@ module.exports = exports = function (server) {
 
             TimeStamp(product, req);
 
-            await dbo.collection('product' + sufix).insert(product, function (error, response) {
+            await dbo.collection('product' + suffix).insert(product, function (error, response) {
                 if (error) {
                     return next(new Error(error));
                 }
@@ -46,8 +46,8 @@ module.exports = exports = function (server) {
     });
 
     //Route get all
-    server.get('/:sufix/api/product', verifyToken, (req, res, next) => {
-        var sufix = req.params.sufix;
+    server.get('/:suffix/api/product', verifyToken, (req, res, next) => {
+        var suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
                 return next(new Error(err));
@@ -55,26 +55,26 @@ module.exports = exports = function (server) {
 
             dbo = db.db(config.dbname);
 
-            await dbo.collection('product' + sufix)
+            await dbo.collection('product' + suffix)
                 .aggregate([
                     {
                         $lookup: {
-                            from: "variant" + sufix,
+                            from: "variant" + suffix,
                             localField: "variantId",
                             foreignField: "_id",
                             as: "variant"
                         }
                     }, {
-                        $unwind: "$variant"
+                        $unwind: { path: "$variant", 'preserveNullAndEmptyArrays': true }
                     },{
                         $lookup: {
-                            from: "category" + sufix,
+                            from: "category" + suffix,
                             localField: "variant.categoryId",
                             foreignField: "_id",
                             as: "variant.category"
                         }
                     }, {
-                        $unwind: "$variant.category"
+                        $unwind: { path : "$variant.category", 'preserveNullAndEmptyArrays': true }
                     }, {
                         $project: {
                             'variant._id': 0
@@ -92,8 +92,8 @@ module.exports = exports = function (server) {
     });
 
     //Route get all
-    server.get('/:sufix/api/prodtrue', verifyToken, (req, res, next) => {
-        var sufix = req.params.sufix;
+    server.get('/:suffix/api/prodtrue', verifyToken, (req, res, next) => {
+        var suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
                 return next(new Error(err));
@@ -101,7 +101,7 @@ module.exports = exports = function (server) {
 
             dbo = db.db(config.dbname);
 
-            await dbo.collection('product' + sufix)
+            await dbo.collection('product' + suffix)
                 .find({ 'active': true }, { '_id': 1, 'initial': 1, 'name': 1, 'price': 1 })
                 .toArray(function (error, response) {
                     if (error) {
@@ -115,8 +115,8 @@ module.exports = exports = function (server) {
     });
 
     //Route get by id
-    server.get('/:sufix/api/product/:id', verifyToken, (req, res, next) => {
-        var sufix = req.params.sufix;
+    server.get('/:suffix/api/product/:id', verifyToken, (req, res, next) => {
+        var suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
                 return next(new Error(err));
@@ -126,17 +126,17 @@ module.exports = exports = function (server) {
 
             let id = ObjectID(req.params.id);
 
-            await dbo.collection('product' + sufix)
+            await dbo.collection('product' + suffix)
                 .aggregate([
                     {
                         $lookup: {
-                            from: "variant" + sufix,
+                            from: "variant" + suffix,
                             localField: "variantId",
                             foreignField: "_id",
                             as: "variant"
                         }
                     }, {
-                        $unwind: "$variant"
+                        $unwind: { path: "$variant", 'preserveNullAndEmptyArrays': true }
                     }, {
                         $match: { '_id': id }
                     }, {
@@ -160,8 +160,8 @@ module.exports = exports = function (server) {
     });
 
     //Route
-    server.put('/:sufix/api/product/:id', verifyToken, (req, res, next) => {
-        var sufix = req.params.sufix;
+    server.put('/:suffix/api/product/:id', verifyToken, (req, res, next) => {
+        var suffix = req.params.suffix;
         let id = ObjectID(req.params.id);
         let product = req.body;
 
@@ -179,7 +179,7 @@ module.exports = exports = function (server) {
 
                 dbo = db.db(config.dbname);
 
-                await dbo.collection('product' + sufix)
+                await dbo.collection('product' + suffix)
                     .findOneAndUpdate({ '_id': id }, { $set: product }, function (error, response) {
                         if (error) {
                             return next(new Error(error));
@@ -201,8 +201,8 @@ module.exports = exports = function (server) {
     });
 
     //Route DEL
-    server.del('/:sufix/api/product/:id', verifyToken, (req, res, next) => {
-        var sufix = req.params.sufix;
+    server.del('/:suffix/api/product/:id', verifyToken, (req, res, next) => {
+        var suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
                 return next(new Error(err));
@@ -211,7 +211,7 @@ module.exports = exports = function (server) {
             dbo = db.db(config.dbname);
             let id = req.params.id;
 
-            await dbo.collection('product' + sufix).deleteOne({ '_id': ObjectID(id) }, function (error, response) {
+            await dbo.collection('product' + suffix).deleteOne({ '_id': ObjectID(id) }, function (error, response) {
                 if (error) {
                     return next(new Error(error));
                 }
