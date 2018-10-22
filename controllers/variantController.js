@@ -21,7 +21,7 @@ module.exports = exports = function (server) {
 
                 if (entity.categoryId == undefined || entity.initial == undefined || entity.name == undefined || entity.active == undefined) {
                     var error = new Error('categoryId and initial and name and active are required!');
-                    error.status = 500;
+                    error.status = 412;
                     return next(error);
                 }
 
@@ -29,7 +29,7 @@ module.exports = exports = function (server) {
                     console.log(cb);
                     if (cb == null) {
                         var error = new Error('Category not found!');
-                        error.status = 500;
+                        error.status = 412;
                         return next(error);
                     }
                 });
@@ -120,6 +120,7 @@ module.exports = exports = function (server) {
     });
 
     server.put('/:suffix/api/variant/:id', verifyToken, (req, res, next) => {
+        let suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, dbase) {
             if (err) {
                 return next(new Error(err));
@@ -130,13 +131,22 @@ module.exports = exports = function (server) {
 
             if (entity.categoryId == undefined && entity.initial == undefined && entity.name == undefined && entity.active == undefined) {
                 var error = new Error('categoryId or initial or name or active is required!');
-                error.status = 500;
+                error.status = 412;
                 return next(error);
             }
-
+            
+            dbo = dbase.db(config.dbname);
             let variant = {};
 
             if (entity.categoryId != undefined) {
+                MatchCategory(dbo, suffix, entity.categoryId, (cb) => {
+                    console.log(cb);
+                    if (cb == null) {
+                        var error = new Error('Category not found!');
+                        error.status = 412;
+                        return next(error);
+                    }
+                });
                 variant.categoryId = ObjectId(entity.categoryId);
             }
 
@@ -154,7 +164,6 @@ module.exports = exports = function (server) {
 
             TimeStamp(variant, req);
 
-            dbo = dbase.db(config.dbname);
             await dbo.collection('variant' + suffix)
                 .findOneAndUpdate({ "_id": ObjectId(id) }, { $set: variant }, function (error, doc) {
                     if (error) {

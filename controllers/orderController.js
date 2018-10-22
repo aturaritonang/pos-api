@@ -20,7 +20,7 @@ module.exports = exports = function (server) {
 
             if (entity.payment == undefined) {
                 var error = new Error('Payement is required!');
-                error.status = 500;
+                error.status = 412;
                 return next(error);
             }
 
@@ -42,7 +42,7 @@ module.exports = exports = function (server) {
                         details.forEach(order => {
                             if (order.productId == undefined || order.quantity == undefined || order.price == undefined) {
                                 var error = new Error('ProductId, Quantity and Price are required!');
-                                error.status = 500;
+                                error.status = 412;
                                 return next(error);
                             }
                             order.headerId = header._id;

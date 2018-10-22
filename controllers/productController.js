@@ -1,6 +1,6 @@
 'use strict';
 const MongoClient = require('mongodb').MongoClient;
-const ObjectID = require('mongodb').ObjectID;
+const ObjectId = require('mongodb').ObjectId;
 const TimeStamp = require('../base/timeStamp');
 
 let dbo;
@@ -9,14 +9,6 @@ module.exports = exports = function (server) {
 
     server.post('/:suffix/api/product', verifyToken, (req, res, next) => {
         var suffix = req.params.suffix;
-        let product = req.body;
-
-        if (product.variantId == undefined || product.initial == undefined || product.name == undefined || product.description == undefined || !product.price || product.active == undefined) {
-            return res.send(500, {
-                error: true,
-                message: 'variantId, initial, name, description, price, active are required'
-            });
-        }
 
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
@@ -24,10 +16,36 @@ module.exports = exports = function (server) {
             }
 
             if (product.variantId) {
-                product.variantId = ObjectID(product.variantId);
+                product.variantId = ObjectId(product.variantId);
             }
 
             dbo = db.db(config.dbname);
+
+            let entity = req.body;
+
+            if (entity.variantId == undefined || entity.initial == undefined || entity.name == undefined || entity.description == undefined || entity.price == undefined || entity.active == undefined) {
+                return res.send(412, {
+                    error: true,
+                    message: 'variantId, initial, name, description, price, active are required'
+                });
+            }
+
+            MatchVariant(dbo, suffix, entity.variantId, (cb) => {
+                //console.log(cb);
+                if (cb == null) {
+                    var error = new Error('Variant not found!');
+                    error.status = 412;
+                    return next(error);
+                }
+            });
+
+            let product = {};
+            product.variantId = ObjectId(entity.variantId);
+            product.initial = entity.initial;
+            product.name = entity.name;
+            product.description = entity.description;
+            product.price = entity.price;
+            product.active = entity.active;
 
             TimeStamp(product, req);
 
@@ -66,7 +84,7 @@ module.exports = exports = function (server) {
                         }
                     }, {
                         $unwind: { path: "$variant", 'preserveNullAndEmptyArrays': true }
-                    },{
+                    }, {
                         $lookup: {
                             from: "category" + suffix,
                             localField: "variant.categoryId",
@@ -74,7 +92,7 @@ module.exports = exports = function (server) {
                             as: "variant.category"
                         }
                     }, {
-                        $unwind: { path : "$variant.category", 'preserveNullAndEmptyArrays': true }
+                        $unwind: { path: "$variant.category", 'preserveNullAndEmptyArrays': true }
                     }, {
                         $project: {
                             'variant._id': 0
@@ -124,7 +142,7 @@ module.exports = exports = function (server) {
 
             dbo = db.db(config.dbname);
 
-            let id = ObjectID(req.params.id);
+            let id = ObjectId(req.params.id);
 
             await dbo.collection('product' + suffix)
                 .aggregate([
@@ -162,22 +180,52 @@ module.exports = exports = function (server) {
     //Route
     server.put('/:suffix/api/product/:id', verifyToken, (req, res, next) => {
         var suffix = req.params.suffix;
-        let id = ObjectID(req.params.id);
-        let product = req.body;
+        let id = ObjectId(req.params.id);
+        let entity = req.body;
 
-        if (product.variantId != undefined || product.initial != undefined || product.name != undefined || product.description != undefined|| product.price != undefined || product.active != undefined) {
+        if (entity.variantId != undefined || entity.initial != undefined || entity.name != undefined || entity.description != undefined || entity.price != undefined || entity.active != undefined) 
+        {
             MongoClient.connect(config.dbconn, async function (err, db) {
                 if (err) {
                     return next(new Error(err));
                 }
 
-                if (product.variantId) {
-                    product.variantId = ObjectID(product.variantId);
+                let product = {};
+
+                if (entity.variantId != undefined) {
+                    MatchVariant(dbo, suffix, entity.variantId, (cb) => {
+                        if (cb == null) {
+                            var error = new Error('Variant not found!');
+                            error.status = 412;
+                            return next(error);
+                        }
+                    });
+                    product.variantId = ObjectId(entity.variantId);
+                }
+
+                if(entity.initial != undefined){
+                    product.initial = entity.initial;
+                }
+
+                if(entity.name != undefined){
+                    product.name = entity.name;
+                }
+
+                if(entity.description != undefined){
+                    product.description = entity.description;
+                }
+
+                if(entity.price != undefined){
+                    product.price = entity.price;
+                }
+
+                if(entity.active != undefined){
+                    product.active = entity.active;
                 }
 
                 TimeStamp(product, req);
 
-                dbo = db.db(config.dbname);
+                dbo = db.db(config.dbname);             
 
                 await dbo.collection('product' + suffix)
                     .findOneAndUpdate({ '_id': id }, { $set: product }, function (error, response) {
@@ -193,7 +241,7 @@ module.exports = exports = function (server) {
                     });
             });
         } else {
-            return res.send(500, {
+            return res.send(412, {
                 error: true,
                 message: 'No found class: variantId or initial or name or description or price or active'
             });
@@ -222,3 +270,19 @@ module.exports = exports = function (server) {
         });
     });
 };
+
+function MatchVariant(dbo, suffix, id, callback) {
+    try {
+        dbo.collection('variant' + suffix)
+            .findOne({ "_id": ObjectId(id) }, function (error, doc) {
+                if (error) {
+                    return callback(null);
+                }
+                console.log(doc);
+                return callback(doc);
+            });
+    } catch (error) {
+        return callback(error);
+        // throw error;
+    }
+}

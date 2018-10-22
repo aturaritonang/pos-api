@@ -142,7 +142,7 @@ module.exports = exports = function (server) {
 
         if (entity.initial == undefined || entity.name == undefined || entity.active == undefined) {
             var error = new Error('initial, name and active are required!');
-            error.status = 406;
+            error.status = 412;
             return next(error);
         }
 
@@ -154,8 +154,8 @@ module.exports = exports = function (server) {
             }
 
             dbo = db.db(config.dbname);
-            let category = {};
 
+            let category = {};
             category.initial = entity.initial;
             category.name = entity.name;
             category.active = entity.active;
@@ -183,7 +183,7 @@ module.exports = exports = function (server) {
 
         if (entity.initial == undefined && entity.name == undefined && entity.active == undefined) {
             var error = new Error('initial or name or active are required!');
-            error.status = 406;
+            error.status = 412;
             return next(error);
         }
 
@@ -198,7 +198,6 @@ module.exports = exports = function (server) {
             let id = req.params.id;
 
             let category = {};
-
             if (entity.initial != undefined) {
                 category.initial = entity.initial;
             }

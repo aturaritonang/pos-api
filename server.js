@@ -61,7 +61,7 @@ server.use((error, req, res, next) => {
     console.log({
         message: error.message
     }); 
-    res.status(error.status || 500);
+    res.status(error.status || 400);
     res.json({
         error: error.message
     });

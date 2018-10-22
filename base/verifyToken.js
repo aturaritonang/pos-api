@@ -8,9 +8,9 @@ module.exports = function (req, res, next) {
             if (token) {
                 jwt.verify(token, config.jwt_secret, function (error, decode) {
                     if (error) {
-                        return res.send(500, {
+                        return res.send(400, {
                             error: true,
-                            message: 'Internal Server Error'
+                            message: 'Bad Request'
                         });
                     }
                     // console.log(decode);

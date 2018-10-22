@@ -12,7 +12,7 @@ module.exports = exports = function (server) {
         MongoClient.connect(config.dbconn, async function (err, db) {
             let user = req.body;
             if (!user.userName || !user.password) {
-                return res.send(500, {
+                return res.send(401, {
                     error: true,
                     message: 'UserName and Password required!'
                 });
@@ -38,7 +38,7 @@ module.exports = exports = function (server) {
                             res.send(200, response);
                             db.close();
                         } else {
-                            res.send(500, {
+                            res.send(401, {
                                 error: true,
                                 message: 'User name or password invalid!'
                             });
@@ -60,13 +60,13 @@ module.exports = exports = function (server) {
                                     db.close();
                                 });
                             } else {
-                                res.send(500, {
+                                res.send(401, {
                                     error: true,
                                     message: 'Password must be equals and more than 6 chars'
                                 });
                             }
                         } else {
-                            res.send(500, {
+                            res.send(401, {
                                 error: true,
                                 message: 'User name or password invalid!'
                             });
