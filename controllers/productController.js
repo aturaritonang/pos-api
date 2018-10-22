@@ -271,9 +271,9 @@ module.exports = exports = function (server) {
     });
 };
 
-async function MatchVariant(dbo, suffix, id, callback) {
+function MatchVariant(dbo, suffix, id, callback) {
     try {
-        await dbo.collection('variant' + suffix)
+        dbo.collection('variant' + suffix)
             .findOne({ "_id": ObjectId(id) }, function (error, doc) {
                 if (error) {
                     return callback(null);
