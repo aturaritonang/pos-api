@@ -110,6 +110,56 @@ module.exports = exports = function (server) {
     });
 
     //Route get all
+    server.get('/:suffix/api/product/variant/:varId', verifyToken, (req, res, next) => {
+        var suffix = req.params.suffix;
+        var variantId = req.params.varId;
+        MongoClient.connect(config.dbconn, async function (err, db) {
+            if (err) {
+                return next(new Error(err));
+            }
+
+            dbo = db.db(config.dbname);
+
+            await dbo.collection('product' + suffix)
+                .aggregate([
+                    {
+                        $lookup: {
+                            from: "variant" + suffix,
+                            localField: "variantId",
+                            foreignField: "_id",
+                            as: "variant"
+                        }
+                    }, {
+                        $unwind: { path: "$variant", 'preserveNullAndEmptyArrays': true }
+                    }, {
+                        $lookup: {
+                            from: "category" + suffix,
+                            localField: "variant.categoryId",
+                            foreignField: "_id",
+                            as: "variant.category"
+                        }
+                    }, {
+                        $unwind: { path: "$variant.category", 'preserveNullAndEmptyArrays': true }
+                    }, {
+                        $match : { 'variantId' : ObjectId(variantId) }
+                    }, {
+                        $project: {
+                            'variant._id': 0
+                        }
+                    }
+                ]).toArray(function (error, response) {
+                    if (error) {
+                        return next(new Error(error));
+                    }
+
+                    res.send(200, response);
+                    db.close();
+                });
+        });
+    });
+
+
+    //Route get all
     server.get('/:suffix/api/prodtrue', verifyToken, (req, res, next) => {
         var suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, async function (err, db) {

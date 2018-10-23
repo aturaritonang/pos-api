@@ -62,7 +62,7 @@ module.exports = exports = function (server) {
         }
     });
 
-
+    //Get all
     server.get('/:suffix/api/variant', verifyToken, (req, res, next) => {
         var suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, dbase) {
@@ -98,6 +98,7 @@ module.exports = exports = function (server) {
         });
     });
 
+    //Get by Id
     server.get('/:suffix/api/variant/:id', verifyToken, (req, res, next) => {
         var suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, dbase) {
@@ -119,6 +120,47 @@ module.exports = exports = function (server) {
         });
     });
 
+    //Get all
+    server.get('/:suffix/api/variant/category/:catId', verifyToken, (req, res, next) => {
+        var suffix = req.params.suffix;
+        var categoryId = req.params.catId;
+
+        MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, dbase) {
+            if (err) {
+                return next(new Error(err));
+            }
+
+            dbo = dbase.db(config.dbname);
+            await dbo.collection('variant' + suffix)
+                .aggregate([
+                    {
+                        $lookup: {
+                            from: 'category' + suffix,
+                            localField: 'categoryId',
+                            foreignField: '_id',
+                            as: 'category'
+                        }
+                    }, {
+                        $unwind: { path : '$category', 'preserveNullAndEmptyArrays': true }
+                    }, {
+                        $match : { 'categoryId' : ObjectId(categoryId) }
+                    }, {
+                        $project: {
+                            'category._id': 0
+                        }
+                    }
+                ]).toArray(function (error, docs) {
+                    if (error) {
+                        return next(new Error(error));
+                    }
+
+                    res.send(200, docs);
+                    dbase.close();
+                });
+        });
+    });
+
+    // Put method
     server.put('/:suffix/api/variant/:id', verifyToken, (req, res, next) => {
         let suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, dbase) {
