@@ -95,7 +95,20 @@ module.exports = exports = function (server) {
                         $unwind: { path: "$variant.category", 'preserveNullAndEmptyArrays': true }
                     }, {
                         $project: {
-                            'variant._id': 0
+                            'variant._id': 0,
+                            'variant.category._id': 0,
+                            'createBy': 0,
+                            'createDate': 0,
+                            'modifyBy': 0,
+                            'modifyDate': 0,
+                            'variant.createBy': 0,
+                            'variant.createDate': 0,
+                            'variant.modifyBy': 0,
+                            'variant.modifyDate': 0,
+                            'variant.category.createBy': 0,
+                            'variant.category.createDate': 0,
+                            'variant.category.modifyBy': 0,
+                            'variant.category.modifyDate': 0
                         }
                     }
                 ]).toArray(function (error, response) {
