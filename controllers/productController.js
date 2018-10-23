@@ -123,7 +123,7 @@ module.exports = exports = function (server) {
     });
 
     //Route get all by variant
-    server.get('/:suffix/api/product/variant/:varId', verifyToken, (req, res, next) => {
+    server.get('/:suffix/api/productvariant/:varId', verifyToken, (req, res, next) => {
         var suffix = req.params.suffix;
         var variantId = req.params.varId;
         MongoClient.connect(config.dbconn, async function (err, db) {
@@ -173,7 +173,7 @@ module.exports = exports = function (server) {
 
 
     //Route get all
-    server.get('/:suffix/api/product/true', verifyToken, (req, res, next) => {
+    server.get('/:suffix/api/producttrue', verifyToken, (req, res, next) => {
         var suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {

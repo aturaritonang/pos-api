@@ -99,7 +99,7 @@ module.exports = exports = function (server) {
     });
 
     //Get all
-    server.get('/:suffix/api/variant/true', verifyToken, (req, res, next) => {
+    server.get('/:suffix/api/varianttrue', verifyToken, (req, res, next) => {
         var suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, dbase) {
             if (err) {
@@ -147,7 +147,7 @@ module.exports = exports = function (server) {
     });
 
     //Get all
-    server.get('/:suffix/api/variant/category/:catId', verifyToken, (req, res, next) => {
+    server.get('/:suffix/api/variantcategory/:catId', verifyToken, (req, res, next) => {
         var suffix = req.params.suffix;
         var categoryId = req.params.catId;
 
