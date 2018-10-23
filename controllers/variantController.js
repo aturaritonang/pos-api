@@ -98,6 +98,32 @@ module.exports = exports = function (server) {
         });
     });
 
+    //Get all
+    server.get('/:suffix/api/variant/true', verifyToken, (req, res, next) => {
+        var suffix = req.params.suffix;
+        MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, dbase) {
+            if (err) {
+                return next(new Error(err));
+            }
+
+            dbo = dbase.db(config.dbname);
+            await dbo.collection('variant' + suffix)
+                .find({ 'active': true }, { '_id': 1, 'initial': 1, 'name': 1 })
+                .toArray(function (error, response) {
+                    if (error) {
+                        var err = new Error(error.message);
+                        err.status = 500;
+                        return next(err);
+                    }
+
+                    res.send(200, response);
+
+                    db.close();
+                });
+        });
+    });
+
+
     //Get by Id
     server.get('/:suffix/api/variant/:id', verifyToken, (req, res, next) => {
         var suffix = req.params.suffix;

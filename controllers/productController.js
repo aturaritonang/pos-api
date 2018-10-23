@@ -109,7 +109,7 @@ module.exports = exports = function (server) {
         });
     });
 
-    //Route get all
+    //Route get all by variant
     server.get('/:suffix/api/product/variant/:varId', verifyToken, (req, res, next) => {
         var suffix = req.params.suffix;
         var variantId = req.params.varId;
@@ -160,7 +160,7 @@ module.exports = exports = function (server) {
 
 
     //Route get all
-    server.get('/:suffix/api/prodtrue', verifyToken, (req, res, next) => {
+    server.get('/:suffix/api/product/true', verifyToken, (req, res, next) => {
         var suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
@@ -170,7 +170,7 @@ module.exports = exports = function (server) {
             dbo = db.db(config.dbname);
 
             await dbo.collection('product' + suffix)
-                .find({ 'active': true }, { '_id': 1, 'initial': 1, 'name': 1, 'price': 1 })
+                .find({ 'active': true }, { '_id': 1, 'initial': 1, 'name': 1, 'description': 1, 'price': 1 })
                 .toArray(function (error, response) {
                     if (error) {
                         return next(new Error(error));

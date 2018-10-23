@@ -108,7 +108,7 @@ module.exports = exports = function (server) {
     });
 
     //Route Get All Active True
-    server.get('/:suffix/api/categorytrue', verifyToken, (req, res, next) => {
+    server.get('/:suffix/api/category/true', verifyToken, (req, res, next) => {
         var suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
