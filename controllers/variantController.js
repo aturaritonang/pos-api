@@ -245,6 +245,7 @@ module.exports = exports = function (server) {
     });
 
     server.del('/:suffix/api/variant/:id', verifyToken, (req, res, next) => {
+        let suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, dbase) {
             if (err) {
                 return next(new Error(err));
