@@ -1,6 +1,6 @@
 'use strict';
 const MongoClient = require('mongodb').MongoClient;
-const ObjectId = require('mongodb').ObjectId;
+const ObjectID = require('mongodb').ObjectID;
 const TimeStamp = require('../base/timeStamp');
 
 let dbo;
@@ -35,7 +35,7 @@ module.exports = exports = function (server) {
                 });
 
                 let variant = {};
-                variant.categoryId = ObjectId(entity.categoryId);
+                variant.categoryId = ObjectID(entity.categoryId);
                 variant.initial = entity.initial;
                 variant.name = entity.name;
                 variant.active = entity.active;
@@ -135,7 +135,7 @@ module.exports = exports = function (server) {
             let id = req.params.id;
             dbo = dbase.db(config.dbname);
             await dbo.collection('variant' + suffix)
-                .findOne({ "_id": ObjectId(id) }, function (error, doc) {
+                .findOne({ "_id": ObjectID(id) }, function (error, doc) {
                     if (error) {
                         return next(new Error(error));
                     }
@@ -169,7 +169,7 @@ module.exports = exports = function (server) {
                     }, {
                         $unwind: { path : '$category', 'preserveNullAndEmptyArrays': true }
                     }, {
-                        $match : { 'categoryId' : ObjectId(categoryId) }
+                        $match : { 'categoryId' : ObjectID(categoryId) }
                     }, {
                         $project: {
                             'category._id': 0
@@ -215,7 +215,7 @@ module.exports = exports = function (server) {
                         return next(error);
                     }
                 });
-                variant.categoryId = ObjectId(entity.categoryId);
+                variant.categoryId = ObjectID(entity.categoryId);
             }
 
             if (entity.initial != undefined) {
@@ -233,7 +233,7 @@ module.exports = exports = function (server) {
             TimeStamp(variant, req);
 
             await dbo.collection('variant' + suffix)
-                .findOneAndUpdate({ "_id": ObjectId(id) }, { $set: variant }, function (error, doc) {
+                .findOneAndUpdate({ "_id": ObjectID(id) }, { $set: variant }, function (error, doc) {
                     if (error) {
                         return next(new Error(error));
                     }
@@ -254,7 +254,7 @@ module.exports = exports = function (server) {
 
             dbo = dbase.db(config.dbname);
             await dbo.collection('variant' + suffix)
-                .findOneAndDelete({ "_id": ObjectId(id) }, function (error, doc) {
+                .findOneAndDelete({ "_id": ObjectID(id) }, function (error, doc) {
                     if (error) {
                         return next(new Error(error));
                     }
@@ -269,7 +269,7 @@ module.exports = exports = function (server) {
 function MatchCategory(dbo, suffix, id, callback) {
     try {
         dbo.collection('category' + suffix)
-            .findOne({ "_id": ObjectId(id) }, function (error, doc) {
+            .findOne({ "_id": ObjectID(id) }, function (error, doc) {
                 if (error) {
                     return callback(null);
                 }

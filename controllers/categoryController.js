@@ -241,7 +241,8 @@ module.exports = exports = function (server) {
             dbo = db.db(config.dbname);
             let id = req.params.id;
 
-            await dbo.collection('category' + suffix).findOneAndDelete({ '_id': ObjectID(id) }, function (error, response) {
+            await dbo.collection('category' + suffix)
+            .findOneAndDelete({ '_id': ObjectID(id) }, function (error, response) {
                 if (error) {
                     var err = new Error(error.message);
                     err.status = 500;
