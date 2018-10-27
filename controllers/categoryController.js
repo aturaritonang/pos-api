@@ -178,7 +178,6 @@ module.exports = exports = function (server) {
     //Route PUT
     server.put('/:suffix/api/category/:id', verifyToken, (req, res, next) => {
         var suffix = req.params.suffix;
-
         let entity = req.body;
 
         if (entity.initial == undefined && entity.name == undefined && entity.active == undefined) {

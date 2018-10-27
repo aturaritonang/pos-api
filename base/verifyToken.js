@@ -8,9 +8,9 @@ module.exports = function (req, res, next) {
             if (token) {
                 jwt.verify(token, config.jwt_secret, function (error, decode) {
                     if (error) {
-                        return res.send(400, {
+                        return res.send(401, {
                             error: true,
-                            message: 'Bad Request'
+                            message: 'Unauthorized or expired token'
                         });
                     }
                     // console.log(decode);
@@ -21,14 +21,14 @@ module.exports = function (req, res, next) {
             } else {
                 return res.send(401, {
                     error: true,
-                    message: 'Unauthorized'
+                    message: 'Unauthorized, token not found'
                 });
             }
         } else {
             next();
         }
     } catch (error) {
-        res.send(500, {
+        res.send(400, {
             error: true,
             message: 'Error verification : ' + error.message
         });
