@@ -15,10 +15,6 @@ module.exports = exports = function (server) {
                 return next(new Error(err));
             }
 
-            if (product.variantId) {
-                product.variantId = ObjectId(product.variantId);
-            }
-
             dbo = db.db(config.dbname);
 
             let entity = req.body;
@@ -154,7 +150,7 @@ module.exports = exports = function (server) {
                     }, {
                         $unwind: { path: "$variant.category", 'preserveNullAndEmptyArrays': true }
                     }, {
-                        $match : { 'variantId' : ObjectId(variantId) }
+                        $match: { 'variantId': ObjectId(variantId) }
                     }, {
                         $project: {
                             'variant._id': 0
@@ -246,8 +242,7 @@ module.exports = exports = function (server) {
         let id = ObjectId(req.params.id);
         let entity = req.body;
 
-        if (entity.variantId != undefined || entity.initial != undefined || entity.name != undefined || entity.description != undefined || entity.price != undefined || entity.active != undefined) 
-        {
+        if (entity.variantId != undefined || entity.initial != undefined || entity.name != undefined || entity.description != undefined || entity.price != undefined || entity.active != undefined) {
             MongoClient.connect(config.dbconn, async function (err, db) {
                 if (err) {
                     return next(new Error(err));
@@ -256,51 +251,56 @@ module.exports = exports = function (server) {
                 let product = {};
 
                 if (entity.variantId != undefined) {
-                    MatchVariant(dbo, suffix, entity.variantId, (cb) => {
-                        if (cb == null) {
-                            var error = new Error('Variant not found!');
-                            error.status = 412;
-                            return next(error);
-                        }
-                    });
+                    // MatchVariant(dbo, suffix, entity.variantId, (cb) => {
+                    //     if (cb == null) {
+                    //         var error = new Error('Variant not found!');
+                    //         error.status = 412;
+                    //         return next(error);
+                    //     }
+                    // });
                     product.variantId = ObjectId(entity.variantId);
                 }
 
-                if(entity.initial != undefined){
+                if (entity.initial != undefined) {
                     product.initial = entity.initial;
                 }
 
-                if(entity.name != undefined){
-                    product.name = entity.name;
+                if (entity.name != undefined) {
+                    product.name = {
+                        en: entity.name.en,
+                        id: entity.name.id
+                    }
                 }
 
-                if(entity.description != undefined){
-                    product.description = entity.description;
+                if (entity.description != undefined) {
+                    product.description = {
+                        en: entity.description.en,
+                        id: entity.description.id
+                    };
                 }
 
-                if(entity.price != undefined){
+                if (entity.price != undefined) {
                     product.price = entity.price;
                 }
 
-                if(entity.active != undefined){
+                if (entity.active != undefined) {
                     product.active = entity.active;
                 }
 
                 TimeStamp(product, req);
 
-                dbo = db.db(config.dbname);             
+                dbo = db.db(config.dbname);
 
                 await dbo.collection('product' + suffix)
-                    .findOneAndUpdate({ '_id': id }, { $set: product }, function (error, response) {
+                    .findOneAndUpdate({ '_id': id }, { $set: product }, function (error, doc) {
                         if (error) {
                             return next(new Error(error));
                         }
 
-                        res.send(200, {
-                            message: response
-                        });
-
+                        res.send(200, doc);
+                        
                         db.close();
+                        
                     });
             });
         } else {
@@ -320,9 +320,9 @@ module.exports = exports = function (server) {
             }
 
             dbo = db.db(config.dbname);
-            let id = req.params.id;
+            let id = ObjectId(req.params.id);
 
-            await dbo.collection('product' + suffix).deleteOne({ '_id': ObjectID(id) }, function (error, response) {
+            await dbo.collection('product' + suffix).findOneAndDelete({ '_id': ObjectId(id) }, function (error, response) {
                 if (error) {
                     return next(new Error(error));
                 }
@@ -341,7 +341,7 @@ function MatchVariant(dbo, suffix, id, callback) {
                 if (error) {
                     return callback(null);
                 }
-                console.log(doc);
+                // console.log(doc);
                 return callback(doc);
             });
     } catch (error) {
