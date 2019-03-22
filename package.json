@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Point of Sale Web API Services",
   "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "nodemon server.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mangatur/pos-api.git"
