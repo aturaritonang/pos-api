@@ -20,6 +20,7 @@ module.exports = exports = function (server) {
             let entity = req.body;
 
             if (entity.variantId == undefined || entity.initial == undefined || entity.name == undefined || entity.description == undefined || entity.price == undefined || entity.active == undefined) {
+                // || entity.imgUrl == undefined
                 return res.send(412, {
                     error: true,
                     message: 'variantId, initial, name, description, price, active are required'
@@ -42,6 +43,7 @@ module.exports = exports = function (server) {
             product.description = entity.description;
             product.price = entity.price;
             product.active = entity.active;
+            // product.imgUrl = entity.imgUrl;
 
             TimeStamp(product, req);
 
@@ -243,6 +245,7 @@ module.exports = exports = function (server) {
         let entity = req.body;
 
         if (entity.variantId != undefined || entity.initial != undefined || entity.name != undefined || entity.description != undefined || entity.price != undefined || entity.active != undefined) {
+            // || entity.imgUrl != undefined
             MongoClient.connect(config.dbconn, async function (err, db) {
                 if (err) {
                     return next(new Error(err));
@@ -266,17 +269,11 @@ module.exports = exports = function (server) {
                 }
 
                 if (entity.name != undefined) {
-                    product.name = {
-                        en: entity.name.en,
-                        id: entity.name.id
-                    }
+                    product.name = entity.name
                 }
 
                 if (entity.description != undefined) {
-                    product.description = {
-                        en: entity.description.en,
-                        id: entity.description.id
-                    };
+                    product.description = entity.description;
                 }
 
                 if (entity.price != undefined) {

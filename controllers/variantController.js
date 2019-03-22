@@ -20,6 +20,7 @@ module.exports = exports = function (server) {
                 let entity = req.body;
 
                 if (entity.categoryId == undefined || entity.initial == undefined || entity.name == undefined || entity.active == undefined) {
+                    // || entity.imgUrl == undefined
                     var error = new Error('categoryId and initial and name and active are required!');
                     error.status = 412;
                     return next(error);
@@ -39,6 +40,7 @@ module.exports = exports = function (server) {
                 variant.initial = entity.initial;
                 variant.name = entity.name;
                 variant.active = entity.active;
+                // variant.imgUrl = entity.imgUrl;
 
                 TimeStamp(variant, req);
 
@@ -198,6 +200,7 @@ module.exports = exports = function (server) {
             let entity = req.body;
 
             if (entity.categoryId == undefined && entity.initial == undefined && entity.name == undefined && entity.active == undefined) {
+                // && entity.imgUrl == undefined
                 var error = new Error('categoryId or initial or name or active is required!');
                 error.status = 412;
                 return next(error);
@@ -229,6 +232,10 @@ module.exports = exports = function (server) {
             if (entity.active != undefined) {
                 variant.active = entity.active;
             }
+
+            // if (entity.imgUrl != undefined) {
+            //     variant.imgUrl = entity.imgUrl;
+            // }
 
             TimeStamp(variant, req);
 

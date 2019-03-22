@@ -141,6 +141,7 @@ module.exports = exports = function (server) {
         let entity = req.body;
 
         if (entity.initial == undefined || entity.name == undefined || entity.active == undefined) {
+            // || entity.imgUrl == undefined
             var error = new Error('initial, name and active are required!');
             error.status = 412;
             return next(error);
@@ -159,6 +160,7 @@ module.exports = exports = function (server) {
             category.initial = entity.initial;
             category.name = entity.name;
             category.active = entity.active;
+            // category.imgUrl = entity.imgUrl;
 
             TimeStamp(category, req);
 
@@ -181,6 +183,7 @@ module.exports = exports = function (server) {
         let entity = req.body;
 
         if (entity.initial == undefined && entity.name == undefined && entity.active == undefined) {
+            // && entity.imgUrl == undefined
             var error = new Error('initial or name or active are required!');
             error.status = 412;
             return next(error);
@@ -208,6 +211,10 @@ module.exports = exports = function (server) {
             if (entity.active != undefined) {
                 category.active = entity.active;
             }
+
+            // if (entity.imgUrl != undefined) {
+            //     category.imgUrl = entity.imgUrl;
+            // }
 
             TimeStamp(category, req);
 
