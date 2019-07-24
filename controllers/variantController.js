@@ -103,12 +103,14 @@ module.exports = exports = function (server) {
     //Get all
     server.get('/:suffix/api/varianttrue', verifyToken, (req, res, next) => {
         var suffix = req.params.suffix;
-        MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, dbase) {
+        MongoClient.connect(config.dbconn, async function (err, db) {
             if (err) {
-                return next(new Error(err));
+                var error = new Error(err.message);
+                error.status = 500;
+                return next(error);
             }
 
-            dbo = dbase.db(config.dbname);
+            dbo = db.db(config.dbname);
             await dbo.collection('variant' + suffix)
                 .find({ 'active': true }, { '_id': 1, 'initial': 1, 'name': 1 })
                 .toArray(function (error, response) {

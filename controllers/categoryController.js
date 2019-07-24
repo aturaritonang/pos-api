@@ -248,16 +248,16 @@ module.exports = exports = function (server) {
             let id = req.params.id;
 
             await dbo.collection('category' + suffix)
-            .findOneAndDelete({ '_id': ObjectID(id) }, function (error, response) {
-                if (error) {
-                    var err = new Error(error.message);
-                    err.status = 500;
-                    return next(err);
-                }
+                .findOneAndDelete({ '_id': ObjectID(id) }, function (error, response) {
+                    if (error) {
+                        var err = new Error(error.message);
+                        err.status = 500;
+                        return next(err);
+                    }
 
-                res.send(200, response);
-                db.close();
-            });
+                    res.send(200, response);
+                    db.close();
+                });
         });
     });
 };
