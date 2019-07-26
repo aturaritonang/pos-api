@@ -19,7 +19,7 @@ module.exports = exports = function (server) {
             var entity = req.body;
 
             if (entity.payment == undefined  || entity.details == undefined) {
-                var error = new Error('Payement & details are required!');
+                var error = new Error('Payment & details are required!');
                 error.status = 412;
                 return next(error);
             }
@@ -67,7 +67,7 @@ module.exports = exports = function (server) {
         });
     });
 
-    server.get('/:suffix/api/orderrpt', verifyToken, (get, res, next) => {
+    server.get('/:suffix/api/orderrpt', verifyToken, (req, res, next) => {
         var suffix = req.params.suffix;
         MongoClient.connect(config.dbconn, { useNewUrlParser: true }, async function (err, dbase) {
             if (err) {
