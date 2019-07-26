@@ -10,14 +10,14 @@ module.exports = {
     userCount: 2
 }
 
-function getEnableAuth()
-{
-    if (process.env.ENABLE_AUTH == null) {
-        return false
-    } else if(process.env.ENABLE_AUTH == undefined) {
-        return false
+function getEnableAuth() {
+    if (process.env.ENABLE_AUTH === null) {
+        return true
+    } else if (process.env.ENABLE_AUTH === undefined) {
+        return true
     } else {
+        console.log('lain');
         return process.env.ENABLE_AUTH
     }
 }
-// JSON.parse(process.env.ENABLE_AUTH) || 
+// JSON.parse(process.env.ENABLE_AUTH) ||
