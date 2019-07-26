@@ -18,8 +18,8 @@ module.exports = exports = function (server) {
 
             var entity = req.body;
 
-            if (entity.payment == undefined) {
-                var error = new Error('Payement is required!');
+            if (entity.payment == undefined  || entity.details == undefined) {
+                var error = new Error('Payement & details are required!');
                 error.status = 412;
                 return next(error);
             }
@@ -48,7 +48,7 @@ module.exports = exports = function (server) {
                             order.headerId = header._id;
                             order.productId = ObjectId(order.productId);
                             TimeStamp(order, req);
-                        });
+                        })
 
                         dbo.collection('orderDetail' + suffix).insertMany(details, (errDetail, resDetail) => {
                             if (errDetail) {
