@@ -19,13 +19,13 @@
   "license": "MIT",
   "dependencies": {
     "g": "^2.0.1",
-    "jsonwebtoken": "^8.3.0",
-    "mongodb": "^3.1.6",
-    "restify": "^7.2.1",
+    "jsonwebtoken": "^9.0.0",
+    "mongodb": "^5.0.1",
+    "restify": "^11.0.0",
     "restify-cors-middleware": "^1.1.1"
   },
   "devDependencies": {
-    "nodemon": "^1.19.1"
+    "nodemon": "^2.0.20"
   },
   "bugs": {
     "url": "https://github.com/mangatur/pos-api/issues"
